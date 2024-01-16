@@ -1,0 +1,60 @@
+(1) The naming convention for pthread function calls is to use a prefix
+pthread_ followed by the function name that is demarcated with underscores
+_ between each word. For example: pthread_join();
+
+man pthreads(7)
+
+(2)
+pthread_join() man pthread_join(3)
+blocks calling thread until the specified thread id terminates
+
+pthread_mutex_ man pthread_mutex_lock(3P)
+lock mechanism which only allows one thread to access the critical section at any time
+
+pthread_cond_ man pthread_cond_wait(3P)
+compliments pthread_mutex by allowing a thread to block and wait for a certain condition to be satisfied,
+while associated with a mutex. When the condition is satisfied a signal is sent to wakeup the blocked thread that is held
+under a mutex and its associated condition variable
+
+pthread_barrier_ man pthread_barrier_wait(3P)
+blocks calling threads at the barrier until some X number of threads have made calls to the barrier, thus
+allowing all threads to go through in a synchronized manner
+
+(3) pthread_cond_wait must be called within a loop because of spurious wakeups that could happen for posix threads.
+A spurious wakeup is when the condition variable is signaled but the predicate condition is not actually satisfied.
+In this case it is clearly not the programmer's intention to wakeup and continue so a loop is needed to check again
+that the target predicate condition is actually satisfied. If so then the thread wakes up, if not the thread continues
+to check for the condition predicate to be satisfied while being blocked. Spurious wakeups for posix threads exist for
+performance gains.
+
+man pthread_cond_wait(3P)
+
+(4) which thread executes after a wakeup signal for a condition variable can take different routes for each
+ condition signal mechanism.
+if the signal mechanism is pthread_cond_broadcast then this signal will unblock all threads that are currently blocked
+on the specified condition variable.
+if the signal mechanism is pthread_cond_signal then the function shall unblock at least one of the threads that are blocked
+on the specified condition variable (if any).
+In either case, if more than one thread is blocked on the condition variable,
+then the scheduling policy will determine the order in which the threads are unblocked.
+
+man pthread_cond_broadcast(3P)
+
+(5) If a thread blocks on a condition variable while holding two mutexes, a deadlock may occur which leaves the program
+to be stuck. A condition variable can only be naturally associated with a single mutex for posix threads. After a mutex
+lock, a condition variable atomically unlocks its associated mutex and then blocks the calling thread, thus freeing up
+the lock for another thread that can use it. After this happens,
+if the thread also has another mutex lock activated, then access to the critical section associated with the second mutex is blocked
+for all other threads until the thread wakesup from the condition variable block.
+If the second mutex lock is needed to trigger a signal for the condition variable that is blocked,
+then the program will be in a deadlock. If not, then holding onto two mutexes will likely decrease performance speed.
+
+man pthread_cond_wait(3P)
+
+(6) A detached attributed thread merely determines the behavior of the system when the detached thread terminates.
+It does not prevent the thread from being terminated if the process terminates using exit(3) or when the main thread returns.
+When a detached thread terminates, its resources are automatically released back to the system without the need for another
+thread to join with the terminated thread. Once a thread is detached it cannot be joined with pthread_join(3), or even be
+made joinable again.
+
+man pthread_detach(3)

@@ -1,0 +1,22 @@
+.\" Manpage for sim program.
+.\" Woohyuk Jang, johnjang@gmail.com
+.TH sim 7 "7 November 2016" "1.0" "sim man page"
+.SH NAME
+man \- Simulates client-server job scheduling/handling via threads.
+.SH SYNOPSIS
+sim --lambda [0.005] --mu [0.01] --servers [2] --clients [2]
+.SH DESCRIPTION
+sim is a program that simulates client-server job handling via a simple FIFO queue.
+sim consists of three threads: clock, servers, and clients.
+There is only one clock thread and it is tasked with simulating time cycles for 1000 iterations.
+For each time cycle iteration, the clock thread broadcasts a signal to all other threads.
+When a client thread is activated it will generate a random number and see if it is less than lambda. If so the client thread will create a artificial job and place it in the global queue.
+When a server thread is activated it will generate a random number and see if it is less than mu. If so, and if the server thread is BUSY with a job, then it will terminate the current job as completed. If the server thread is in a FREE state, then it will attempt to dequeue a job from the global queue.
+.SH OPTIONS
+--lambda [0.0 ... 1.0], --mu [0.0 ... 1.0], --servers [x], --clients [y], where x+y <= 256 maximum client, server threads.
+.SH SEE ALSO
+pthreads(7), pthread_mutex(3), pthread_cond(3)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Woohyuk Jang (johnjang@gmail.com)
